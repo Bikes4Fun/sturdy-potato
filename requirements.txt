@@ -1,0 +1,17 @@
+"""
+requirements.txt to-do:
+
+solver instalation: 
+    -kissat: 
+    -cadical:
+    
+    run the make file from the main directory
+    cd into kissat or cadical 
+    mv the executatble ('kissat' or 'cadical') to bin
+
+prettytable
+colortable
+pysat
+
+"""
+
