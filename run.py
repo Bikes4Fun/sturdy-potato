@@ -186,7 +186,7 @@ def cleanup_files():
     for file_path in files_to_cleanup:
         try:
             if os.path.exists(file_path):
-                os.remove(file_path)  # Delete the file
+                os.remove(file_path)  
                 print(f"Deleted file: {file_path}")
             else:
                 print(f"File not found, skipping: {file_path}")
@@ -233,23 +233,3 @@ if __name__ == "__main__":
     print(f"cleanup = False")
     # cleanup_files()
     
-
-
-
-
-# future customizatoins:
-# encoding type
-# profiler on/off
-# various solvers
-
-# encoding types: 
-# pairwise    = 0
-# seqcounter  = 1
-# sortnetwrk  = 2
-# cardnetwrk  = 3
-# bitwise     = 4
-# ladder      = 5
-# totalizer   = 6
-# mtotalizer  = 7
-# kmtotalizer = 8
-# native      = 9

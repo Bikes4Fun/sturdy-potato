@@ -117,12 +117,12 @@ def no_hard_conflicts(combination_set, k=0, pts_key=None):
                     key=("atmost_one", pts_key, section1, section2, each_time),
                 )
 
-            # only inc the current literal if it was actually used, and only inc before the next set of sections
+            # only inc the current literal if it was used for this timeslot
+            # and only before the next set of sections
             if used_aux:
                 aux_var_set.append(CURRENT_LITERAL)
                 CURRENT_LITERAL += 1
 
-    # come back to change this when figure out at most k
     if k >= 1 and len(aux_var_set) > 1:
         sequential_k_greater_one(aux_var_set, k, pts_key=pts_key)
 
@@ -151,36 +151,30 @@ def sequential_k_greater_one(aux_var_set, k, pts_key=None):
 def atmost_one(courses1, courses2=None, aux_var=None, k=1, key=None):
     pystat_current_lits = []
 
-    def valid_pair(a, b):
-        if not isinstance(a, int) or not isinstance(b, int):
-            a = DATA.course_to_literal[a]
-            b = DATA.course_to_literal[b]
+    # Translate variables to literals if they aren't integers
+    # allowing the other functions to focus on gathering the items 
+    # while this function handles generating the clauses
+    def map_to_literal(item):
+        return DATA.course_to_literal.get(item, item) if not isinstance(item, int) else item
 
-        if a == b:
-            return False
-        if a == 0 or b == 0:
-            traceback.print_stack()
-        if k > 1:
-            pystat_current_lits.append([-a, -b, aux_var])
-            return [-a, -b, aux_var]
-        return [-a, -b]
+    courses1_literals = [map_to_literal(i) for i in courses1]
+    courses2_literals = [map_to_literal(j) for j in courses2] if courses2 else courses1_literals
 
-    if courses2 is None:
-        for i, j in combinations(courses1, 2):
-            pair = valid_pair(i, j)
-            if not pair:
-                continue
-            add_pair(pair, key=key)
-        return pystat_current_lits
-    else:
-        for i in courses1:
-            for j in courses2:
-                pair = valid_pair(i, j)
-                if not pair:
+    # Generate pairs between lists (or within a single list if courses2 is None)
+    for i in courses1_literals:
+        for j in courses2_literals:
+            if courses2 == None:
+                if i >= j:  # Ensure unique pairs (i, j) when using mutual exclusivity
                     continue
-                add_pair(pair, key=key)
+            if i == j:  # Skip pairs with identical literals
+                continue
+            
+            # Construct clause
+            clause = [-i, -j] if k == 1 else [-i, -j, aux_var]
+            pystat_current_lits.append(clause)
+            add_pair(clause, key=key)
+    
     return pystat_current_lits
-
 
 def add_pair(pair, key=None):
     global TOTAL_CLAUSES, DEBUG_CNF_LITERALS
@@ -189,8 +183,7 @@ def add_pair(pair, key=None):
         for sub_pair in pair:
             add_pair(sub_pair, key)
         return
-
-    pair = tuple(sorted(pair))
+    pair = tuple(pair)
     if pair in DEBUG_CNF_LITERALS[key] or pair in ALL_LITERALS:
         return
     if DEBUG_CNF:

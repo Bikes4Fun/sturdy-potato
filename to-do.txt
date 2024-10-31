@@ -1,0 +1,29 @@
+
+fix __name__ in process_data
+
+*** comment code *** 
+
+ability to easily specify customizations:
+    encoding type
+    profiler on/off+num lines
+    various solvers
+    cleanup yes/no
+    specify CNF in standard/debug mode
+
+color test outputs (should be a setting?)
+test room overlaps
+test professor specific overlaps
+
+
+
+encoding types: 
+pairwise    = 0
+seqcounter  = 1
+sortnetwrk  = 2
+cardnetwrk  = 3
+bitwise     = 4
+ladder      = 5
+totalizer   = 6
+mtotalizer  = 7
+kmtotalizer = 8
+native      = 9

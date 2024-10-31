@@ -23,8 +23,6 @@ class TestResults(unittest.TestCase):
         self.sections_to_check = sections_to_check
         self.pts_type = pts_type
 
-        # update raw_data for importing module if tests are called directly
-
     def test_all_sections_scheduled(self):
         original_sections = set(self.raw_data.keys())
         result_sections = {course[0] for course in self.results}
@@ -78,7 +76,6 @@ class TestResults(unittest.TestCase):
             return
         
         conflicts = set()
-        # print(f"test data: {self.test_data}")
         for sections in self.test_data:
             section1, section2 = sections
 
@@ -117,5 +114,5 @@ class TestResults(unittest.TestCase):
 
 
     def log_conflict(self, conflict_info):
-        with open("conflicts.log", "a") as f:  # Open the file in append mode
-            f.write(f"{conflict_info}\n")  # Write the conflict information followed by a newline
+        with open("conflicts.log", "a") as f: 
+            f.write(f"{conflict_info}\n")

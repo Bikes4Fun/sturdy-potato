@@ -73,9 +73,6 @@ class ProcessData:
         self.times_by_section = defaultdict(set)
 
     def set_data(self):
-        
-        # for data, combinations in self.conflict_combinations.items():
-        #     print(f"data: {data}\n     combinations: {combinations}\n\n")
 
         self.data = Data(
         
@@ -110,7 +107,6 @@ class ProcessData:
         return True
     
 
-    # assign unique literals to course-room-time mappings
     def assign_literals(self, course_key: CRT) -> None:
         self.course_to_literal[course_key] = self.current_literal
         self.literal_to_course[self.current_literal] = course_key
