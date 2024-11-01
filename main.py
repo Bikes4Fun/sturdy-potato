@@ -204,20 +204,16 @@ def write_cnf() -> None:
 
         if DEBUG_CNF:
             for comment, data in DEBUG_CNF_LITERALS.items():
-                # chunk = sorted(list(data))
-                chunk = list(data)
                 f.write(f"c {comment} \n")
-                buffer = []
-                for clause in chunk:
-                    buffer.append(" ".join(map(str, clause)) + " 0\n")
-                f.write("".join(buffer))
+                chunk = [" ".join(map(str, clause)) + " 0\n" for clause in data]
+                f.write("".join(chunk))
         else:
             print("standard cnf")
             all_list = list(ALL_LITERALS)
             for i in range(0, len(ALL_LITERALS), chunk_size):
-                chunk = all_list[i : i + chunk_size]  # Create a chunk of literals
+                chunk = all_list[i : i + chunk_size]  
                 buffer = [" ".join(map(str, clause)) + " 0\n" for clause in chunk]
-                f.write("".join(buffer))  # Write the chunk to file
+                f.write("".join(buffer)) 
 
 
 def main(course_data, constraints, debug) -> bool:
