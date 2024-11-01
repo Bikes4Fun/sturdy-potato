@@ -131,7 +131,7 @@ def run_tests(constraints, raw_data):
                 )
             )
 
-        for pts_type, test_data in DATA.conflict_combinations.items():
+        for pts_type, test_data in DATA.conflict_type_combinations.items():
             suite.addTest(
                 TestResults(
                     "scheduled_soft_constraints",
@@ -191,7 +191,7 @@ def run_main(data: str, constraints: dict, tests: list, cnf_debug: bool) -> None
             continue
         
         print(f"running tests and printing results.")
-        pretty_main(results)
+        # pretty_main(results)
         SOLVERS[solver_name] = results
 
     run_tests(constraints, raw_data)

@@ -31,9 +31,9 @@ Benefits:
 """
 
 
-@dataclass(frozen=False)
+@dataclass(frozen=True)
 class Data:
-    conflict_combinations: Mapping[int, Set[Tuple[CRT, CRT]]] = field(default_factory=dict)
+    conflict_type_combinations: Mapping[int, Set[Tuple[CRT, CRT]]] = field(default_factory=dict)
     
     building_room_course: Mapping[str, Dict[TimeKey, Set]] = field(default_factory=dict)
     course_to_literal: Mapping[CRT, int] = field(default_factory=dict)
@@ -52,7 +52,7 @@ class ProcessData:
         self.ampm_day_time: dict[tuple[int, str], set] = defaultdict(set)
         self.building_room_course = defaultdict(lambda: defaultdict(set))
 
-        self.conflict_combinations = {
+        self.conflict_type_combinations = {
             100: set(),
             99: set(),
             60: set(),
@@ -76,7 +76,7 @@ class ProcessData:
 
         self.data = Data(
         
-            conflict_combinations = MappingProxyType(dict(self.conflict_combinations)),
+            conflict_type_combinations = MappingProxyType(dict(self.conflict_type_combinations)),
             building_room_course = MappingProxyType(dict(self.building_room_course)),
            
             course_to_literal = MappingProxyType(dict(self.course_to_literal)),
@@ -172,11 +172,11 @@ class ProcessData:
 
     def process_conflicts(self, section1, section2):
 
-        for conflict_type, combinations in self.conflict_combinations.items():
+        for conflict_type, combinations in self.conflict_type_combinations.items():
             if ( section2 in self.course_data.get(section1)["hard"]
                 or section1 in self.course_data.get(section2)["hard"]
             ):
-                self.conflict_combinations[100].add((section1, section2))
+                self.conflict_type_combinations[100].add((section1, section2))
             
             if (
                 self.course_data[section1]["soft"].get(section2) == conflict_type

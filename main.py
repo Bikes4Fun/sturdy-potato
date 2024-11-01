@@ -41,6 +41,31 @@ def profile_function(func):
 
     return wrapper
 
+"""
+iterate every building, every room in that building, and every timeslot that can exist in that room, mapped to every course that could be at that time. 
+
+building_room_course["Smith 108"]['M', 66000, 69000)] = {('CS 1030-01', 'Smith 108', ('MWF', 66000, 69000)), ('CS 3150-01', 'Smith 108', ('MWF', 66000, 69000))...} 
+
+for "Smith 108", ('M', 66000, 69000) in building_room_course
+
+iterate every timeslot in that building/room, gather every course in a timeslot that conflicts with that time, where the course could be in that room during that conflicting timeslot. 
+
+at most, one course from the current timeslot or any overlapping timeslot can exist at a time. 
+
+there is a lot of duplicated checks here but a lot of the other versions I tried had items fall through. The issue with the simpler versions: 
+
+Timeslot A: 9:00-10:30.
+Timeslot B: 10:00-11:30.
+Timeslot C: 11:00-12:00
+
+Timeslot B conflicts with Timeslot A and Timeslot C. 
+    therefore, no courses during timeslot B can exist with courses during timeslot A or timeslot C.
+
+However, that doesn't mean Timeslot A and Timeslot C overlap.
+So you can't just gather everything that overlaps with something
+and make them all mututally exclusive. 
+
+"""
 
 # @profile_function
 def only_one_per_room():
@@ -230,7 +255,7 @@ def main(course_data, constraints, debug) -> bool:
     one_course_per_section()
 
     print("no time conflicts ...")
-    for pts_key, section_combinations in DATA.conflict_combinations.items():
+    for pts_key, section_combinations in DATA.conflict_type_combinations.items():
         k_value = constraints[pts_key]
         if k_value > 0:  # Only call if the constraint is greater than 0
             no_hard_conflicts(section_combinations, k=k_value, pts_key=pts_key)
