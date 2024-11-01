@@ -25,7 +25,7 @@ class Solver:
         self.num_lines = 0
 
     def solve(self):
-        with self.managed_process(self.solver, "results/output.cnf") as process:
+        with self.managed_process() as process:
             if process.stdout is None:
                 raise RuntimeError(f"No stdout from {self.solver}")
             
@@ -43,15 +43,14 @@ class Solver:
             if process.stderr.read():
                 logging.error(f"Error from {self.solver}: {process.stderr.read()}")
                 return False
-
         return True
     
 
     @contextmanager
-    def managed_process(command: str, file: str) -> Iterator[subprocess.Popen[str]]:
+    def managed_process(self) -> Iterator[subprocess.Popen[str]]:
 
         process = subprocess.Popen(
-            [command, file],
+            [self.solver, "results/output.cnf"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -101,7 +100,8 @@ def run_solver(solver_name, literal_to_course) -> tuple:
     p = Solver(solver_name)
     try:
 
-
+        pass 
+    
     except Exception as e:
         logging.error(f"Error while running {solver_name}: {e}")
         traceback.print_exc()
