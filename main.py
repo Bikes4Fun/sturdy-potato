@@ -133,7 +133,7 @@ def no_hard_conflicts(combination_set, k=0, pts_key=None):
 def sequential_k_greater_one(aux_var_set, k, pts_key=None):
     global CURRENT_LITERAL
     # encoding = [1, 2 ...8]
-    cnf = CardEnc.atmost(lits=aux_var_set, top_id=CURRENT_LITERAL, bound=k, encoding=2)
+    cnf = CardEnc.atmost(lits=aux_var_set, top_id=CURRENT_LITERAL, bound=k, encoding=3)
     max_literal = max(abs(lit) for clause in cnf for lit in clause)
     
     CURRENT_LITERAL = max(CURRENT_LITERAL, max_literal)
