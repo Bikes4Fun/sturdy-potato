@@ -7,7 +7,10 @@ from process_data import ProcessData
 from test import TestResults
 
 DATA = None
-SOLVERS = ["cadical", "kissat"]
+SOLVERS = {
+    "cadical": None,
+    "kissat": None
+    }
 
 class Solver:
     """Parser for multiple SAT solvers with custom logic.
@@ -97,49 +100,47 @@ class Solver:
 
 
 def run_solver(solver_name, literal_to_course) -> tuple:
-    p = Solver(solver_name)
+    solver = Solver(solver_name)
     try:
+        solver.solve() 
 
-        pass 
-    
-    except Exception as e:
-        logging.error(f"Error while running {solver_name}: {e}")
+    except:
         traceback.print_exc()
 
     all_results:list = p.get_results(literal_to_course)
     return all_results
 
 
-def run_tests(all_results, constraints, raw_data):
+def run_tests(constraints, raw_data):
     suite = unittest.TestSuite()
-
-    suite.addTest(
-        TestResults(
-            "test_all_sections_scheduled", 
-            all_results=all_results, 
-            raw_data=raw_data, 
-            data=DATA
-            )
-        )
-
-    suite.addTest(
-        TestResults(
-            "run_constraint_conflicts", 
-            all_results=all_results, 
-            data=DATA
-            )
-        )
-
-    for pts_type, test_data in DATA.conflict_combinations.items():
+    for solver, results in SOLVERS.items():
         suite.addTest(
             TestResults(
-                "scheduled_soft_constraints",
-                all_results=all_results,
-                max_conflicts=constraints[pts_type],
-                pts_type=pts_type,
-                test_data=test_data,
+                "test_all_sections_scheduled", 
+                all_results=results, 
+                raw_data=raw_data, 
+                data=DATA
+                )
             )
-        )
+
+        suite.addTest(
+            TestResults(
+                "run_constraint_conflicts", 
+                all_results=results, 
+                data=DATA
+                )
+            )
+
+        for pts_type, test_data in DATA.conflict_combinations.items():
+            suite.addTest(
+                TestResults(
+                    "scheduled_soft_constraints",
+                    all_results=results,
+                    max_conflicts=constraints[pts_type],
+                    pts_type=pts_type,
+                    test_data=test_data,
+                )
+            )
 
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
@@ -153,9 +154,11 @@ def run_main(data: str, constraints: dict, tests: list, cnf_debug: bool) -> None
     importlib.reload(module)
     raw_data = module.course_data
 
+
     pd = ProcessData(raw_data)
     pd.process_data()
     DATA = pd.get_data()
+
 
     if not DATA:
         logging.error(f"Error processing data in ProcessData: {DATA}")
@@ -163,6 +166,7 @@ def run_main(data: str, constraints: dict, tests: list, cnf_debug: bool) -> None
         return
     print(f"DATA was processed.")
     
+
     try:
         main(DATA, constraints, cnf_debug)
     except Exception as e:
@@ -170,26 +174,27 @@ def run_main(data: str, constraints: dict, tests: list, cnf_debug: bool) -> None
         traceback.print_stack()
     print(f"Main complete")
     
-    all_results = defaultdict()
-    # run solvers:
-    for solver_name in SOLVERS:
+
+    for solver_name in SOLVERS.keys():
         print(f"\nsolver: {solver_name}:")
 
-        all_results = run_solver(
-            solver_name, DATA.literal_to_course)
-
-        if not all_results:
-            logging.info(f"solver: {solver_name} returned None or False {all_results}")
-            print(f"solver: {solver_name} returned None or False {all_results}")
+        results = run_solver(
+            solver_name)
+        
+        if not results:
+            logging.info(f"solver: {solver_name} returned None or False {results}")
+            print(f"solver: {solver_name} returned None or False {results}")
             traceback.print_stack()
         
-        if "UNSATISFIABLE" in all_results:
+        if "UNSATISFIABLE" in results:
             print("UNSATISFIABLE")
             continue
         
         print(f"running tests and printing results.")
-        pretty_main(all_results)
-        run_tests(all_results, constraints, raw_data, tests)
+        pretty_main(results)
+        SOLVERS[solver_name] = results
+
+    run_tests(constraints, raw_data)
 
 
 def cleanup_files():
