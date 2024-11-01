@@ -99,7 +99,7 @@ class Solver:
 # --------  
 
 
-def run_solver(solver_name, literal_to_course) -> tuple:
+def run_solver(solver_name) -> tuple:
     solver = Solver(solver_name)
     try:
         solver.solve() 
@@ -107,7 +107,7 @@ def run_solver(solver_name, literal_to_course) -> tuple:
     except:
         traceback.print_exc()
 
-    all_results:list = p.get_results(literal_to_course)
+    all_results:list = solver.get_results()
     return all_results
 
 
@@ -218,7 +218,7 @@ if __name__ == "__main__":
     run_main(
 
         # data to run (cset, cs, other)
-        "datasets.cset",
+        "datasets.cs",
         
         # constraints <= , 0=don't constrain
         {
