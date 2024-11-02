@@ -131,7 +131,7 @@ def run_tests(constraints, raw_data):
                 )
             )
 
-        for pts_type, test_data in DATA.conflict_type_combinations.items():
+        for pts_type, test_data in DATA.conflict_combinations.items():
             suite.addTest(
                 TestResults(
                     "scheduled_soft_constraints",

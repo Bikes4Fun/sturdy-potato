@@ -12,9 +12,6 @@ ALL_LITERALS = set()
 DEBUG_CNF = True
 DEBUG_CNF_LITERALS: Dict = defaultdict(set)
 CHECKED = set()
-MAX_BUFFER = 500
-CURRENT_BUFFER_LEN = 0
-CLAUSES_BUFFER = []
 
 def one_course_per_section():
     for section, courses in DATA.section_to_crt.items():
@@ -151,7 +148,6 @@ def sequential_k_greater_one(aux_var_set, k, pts_key=None):
 """
 # @profile_function
 def atmost_one(courses1, courses2=None, aux_var=None, k=1, key=None):
-    global CLAUSES_BUFFER, CURRENT_BUFFER_LEN
     pystat_current_lits = []
 
     # Translate variables to literals if they aren't integers
@@ -181,13 +177,22 @@ def atmost_one(courses1, courses2=None, aux_var=None, k=1, key=None):
 
 def add_pair(pair, key=None):
     global TOTAL_CLAUSES, DEBUG_CNF_LITERALS
-    
+
     if all(isinstance(p, list) for p in pair):
         for sub_pair in pair:
             add_pair(sub_pair, key)
         return
 
+    # checking an items existence in a python set is O(1) on average, 
+    # so since we need the total number of clauses, 
+    # it should be faster to check if a clause exists in the set
+    # before adding/incremening vs checking the length at the end.
+    # this will also help avoid duplicates in the CNF file which
+    # should not slow the solver, but does slow the
+    # parsing/creation of the cnf.
     pair = tuple(pair)
+    if pair in DEBUG_CNF_LITERALS[key] or pair in ALL_LITERALS:
+        return
     if DEBUG_CNF:
         DEBUG_CNF_LITERALS[key].add(pair)
     else:
@@ -199,7 +204,7 @@ def add_pair(pair, key=None):
 def write_cnf() -> None:
     # Adjust according to how many chunks you want
     chunk_size = (max(len(DEBUG_CNF_LITERALS), len(ALL_LITERALS)) // 8) + 1
-    add_pair(CLAUSES_BUFFER, key="leftover clauses buffer")
+    # add_pair(CLAUSES_BUFFER, key="leftover clauses buffer")
 
     # 512 KB buffer, adjust for your machine
     with open("results/output.cnf", "w", buffering=524288) as f:
@@ -237,7 +242,7 @@ def main(course_data, constraints, debug) -> bool:
     one_course_per_section()
 
     print("no time conflicts ...")
-    for pts_key, section_combinations in DATA.conflict_type_combinations.items():
+    for pts_key, section_combinations in DATA.conflict_combinations.items():
         k_value = constraints[pts_key]
         if k_value > 0:  # Only call if the constraint is greater than 0
             no_hard_conflicts(section_combinations, k=k_value, pts_key=pts_key)
