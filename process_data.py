@@ -47,7 +47,7 @@ class Data:
 
 class ProcessData:
     def __init__(self, course_data: Dict):
-
+        self.all_times = defaultdict(set)
         self.all_sections: Set[str] = set()  # all course names "CS 2420-01"
         self.ampm_day_time: dict[tuple[int, str], set] = defaultdict(set)
         self.building_room_course = defaultdict(lambda: defaultdict(set))
@@ -75,7 +75,6 @@ class ProcessData:
     def set_data(self):
 
         self.data = Data(
-        
             conflict_type_combinations = MappingProxyType(dict(self.conflict_type_combinations)),
             building_room_course = MappingProxyType(dict(self.building_room_course)),
            
@@ -88,6 +87,15 @@ class ProcessData:
             time_conflicts = MappingProxyType(dict(self.time_conflicts)),
             times_by_section = MappingProxyType(dict(self.times_by_section)),
         )
+        all = defaultdict(set)
+        total = 0
+        for day, times in self.all_times.items():
+            for time in times:
+                all[day].add(time)
+        for day, times in all.items():
+            print(len(times))
+        print(f"total: {total}")
+        
 
     def get_data(self):
         return self.data
@@ -140,7 +148,8 @@ class ProcessData:
                 self.building_room_course[building_room][char_time].add(course_key)
                 self.courses_by_time[char_time].add(course_key)
                 self.times_by_section[section].add(char_time)
-
+                self.all_times[char].add(time[1])
+                self.all_times[char].add(time[2])
                 if time[1] <= 72000:
                     self.ampm_day_time[(0, char)].add(tuple([time[1], time[2]]))
                 if time[2] >= 72000:

@@ -4,7 +4,10 @@ from collections import defaultdict
 import cProfile
 
 PROFESSORS = {
-
+    ("LEWIS", "31m"): {"CS 3005-01", "CS 3510-01", "CS 4320-01", "CS 4600-01"},
+    ("QUINN", "32m"): {"CS 1400-02", "CS 1400-03", "CS 1410-02", "CS 3150-01"},
+    ("ROSS", "33m"): {"CS 2810-01", "CS 2810-02", "CS 3410-01", "CS 4307-01"},
+    ("STANDER", "35m"): {"CS 2420-01", "CS 3310-01",  "CS 3600-01",  "CS 4550-01"}
 }
 
 def pretty_main(results) -> None:

@@ -12,7 +12,9 @@ ALL_LITERALS = set()
 DEBUG_CNF = True
 DEBUG_CNF_LITERALS: Dict = defaultdict(set)
 CHECKED = set()
-
+MAX_BUFFER = 500
+CURRENT_BUFFER_LEN = 0
+CLAUSES_BUFFER = []
 
 def one_course_per_section():
     for section, courses in DATA.section_to_crt.items():
@@ -41,31 +43,6 @@ def profile_function(func):
 
     return wrapper
 
-"""
-iterate every building, every room in that building, and every timeslot that can exist in that room, mapped to every course that could be at that time. 
-
-building_room_course["Smith 108"]['M', 66000, 69000)] = {('CS 1030-01', 'Smith 108', ('MWF', 66000, 69000)), ('CS 3150-01', 'Smith 108', ('MWF', 66000, 69000))...} 
-
-for "Smith 108", ('M', 66000, 69000) in building_room_course
-
-iterate every timeslot in that building/room, gather every course in a timeslot that conflicts with that time, where the course could be in that room during that conflicting timeslot. 
-
-at most, one course from the current timeslot or any overlapping timeslot can exist at a time. 
-
-there is a lot of duplicated checks here but a lot of the other versions I tried had items fall through. The issue with the simpler versions: 
-
-Timeslot A: 9:00-10:30.
-Timeslot B: 10:00-11:30.
-Timeslot C: 11:00-12:00
-
-Timeslot B conflicts with Timeslot A and Timeslot C. 
-    therefore, no courses during timeslot B can exist with courses during timeslot A or timeslot C.
-
-However, that doesn't mean Timeslot A and Timeslot C overlap.
-So you can't just gather everything that overlaps with something
-and make them all mututally exclusive. 
-
-"""
 
 # @profile_function
 def only_one_per_room():
@@ -174,6 +151,7 @@ def sequential_k_greater_one(aux_var_set, k, pts_key=None):
 """
 # @profile_function
 def atmost_one(courses1, courses2=None, aux_var=None, k=1, key=None):
+    global CLAUSES_BUFFER, CURRENT_BUFFER_LEN
     pystat_current_lits = []
 
     # Translate variables to literals if they aren't integers
@@ -198,19 +176,18 @@ def atmost_one(courses1, courses2=None, aux_var=None, k=1, key=None):
             clause = [-i, -j] if k == 1 else [-i, -j, aux_var]
             pystat_current_lits.append(clause)
             add_pair(clause, key=key)
-    
     return pystat_current_lits
+
 
 def add_pair(pair, key=None):
     global TOTAL_CLAUSES, DEBUG_CNF_LITERALS
-
+    
     if all(isinstance(p, list) for p in pair):
         for sub_pair in pair:
             add_pair(sub_pair, key)
         return
+
     pair = tuple(pair)
-    if pair in DEBUG_CNF_LITERALS[key] or pair in ALL_LITERALS:
-        return
     if DEBUG_CNF:
         DEBUG_CNF_LITERALS[key].add(pair)
     else:
@@ -222,6 +199,7 @@ def add_pair(pair, key=None):
 def write_cnf() -> None:
     # Adjust according to how many chunks you want
     chunk_size = (max(len(DEBUG_CNF_LITERALS), len(ALL_LITERALS)) // 8) + 1
+    add_pair(CLAUSES_BUFFER, key="leftover clauses buffer")
 
     # 512 KB buffer, adjust for your machine
     with open("results/output.cnf", "w", buffering=524288) as f:
@@ -229,9 +207,13 @@ def write_cnf() -> None:
 
         if DEBUG_CNF:
             for comment, data in DEBUG_CNF_LITERALS.items():
+                chunk = list(data)
                 f.write(f"c {comment} \n")
-                chunk = [" ".join(map(str, clause)) + " 0\n" for clause in data]
-                f.write("".join(chunk))
+                buffer = []
+                for clause in chunk:
+                    buffer.append(" ".join(map(str, clause)) + " 0\n")
+                f.write("".join(buffer))
+
         else:
             print("standard cnf")
             all_list = list(ALL_LITERALS)

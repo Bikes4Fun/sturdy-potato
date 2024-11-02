@@ -191,7 +191,7 @@ def run_main(data: str, constraints: dict, tests: list, cnf_debug: bool) -> None
             continue
         
         print(f"running tests and printing results.")
-        # pretty_main(results)
+        pretty_main(results)
         SOLVERS[solver_name] = results
 
     run_tests(constraints, raw_data)
