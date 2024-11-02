@@ -31,7 +31,7 @@ Benefits:
 """
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=False)
 class Data:
     conflict_type_combinations: Mapping[int, Set[Tuple[CRT, CRT]]] = field(default_factory=dict)
     
